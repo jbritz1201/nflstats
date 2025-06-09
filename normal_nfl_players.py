@@ -1,6 +1,7 @@
 # my_python_file.py
 
 import pandas as pd
+import sqlite3
 
 def load_data(filename):
     """Load the Excel file into a DataFrame."""
@@ -40,6 +41,13 @@ def print_players_by_modern_position(df):
         print(f'\nPlayers at modern position: {position}')
         print(df[df['modern_position'] == position])
 
+def run_query(query):
+    """Run a SQL query on the nfl_players.db SQLite database and print the result as a DataFrame."""
+    conn = sqlite3.connect('nfl_players.db')
+    result = pd.read_sql_query(query, conn)
+    conn.close()
+    print(result)
+
 def main():
     df = load_data('NFL_player_database.xlsx')
     positions_df = build_positions_df(df)
@@ -47,6 +55,11 @@ def main():
     df = add_modern_position(df, positions_df)
     print(df)
     print_players_by_modern_position(df)
+    # Example SQL queries
+    print("\nExample: First 5 players from the database:")
+    run_query("SELECT * FROM players LIMIT 5;")
+    print("\nExample: Distinct positions in the database:")
+    run_query("SELECT DISTINCT position FROM players;")
 
 if __name__ == "__main__":
     main()
