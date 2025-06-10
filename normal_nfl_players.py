@@ -35,31 +35,31 @@ def add_modern_position(df, positions_df):
     df['modern_position'] = df['position'].apply(lambda x: alias_map.get(str(x).lower(), x))
     return df
 
-def print_players_by_modern_position(df):
-    """Print all players grouped by modern_position."""
-    for position in df['modern_position'].dropna().unique():
-        print(f'\nPlayers at modern position: {position}')
-        print(df[df['modern_position'] == position])
-
 def run_query(query):
     """Run a SQL query on the nfl_players.db SQLite database and print the result as a DataFrame."""
     conn = sqlite3.connect('nfl_players.db')
     result = pd.read_sql_query(query, conn)
     conn.close()
-    print(result)
+    """print(result)"""
+def update_players(df):
+    """Update the players table in the SQLite database with the DataFrame."""
+    conn = sqlite3.connect('nfl_players.db')
+    df.to_sql('players', conn, if_exists='replace', index=False)
+    conn.close()
 
 def main():
     df = load_data('NFL_player_database.xlsx')
     positions_df = build_positions_df(df)
-    print(positions_df)
+    """print(positions_df)"""
     df = add_modern_position(df, positions_df)
-    print(df)
-    print_players_by_modern_position(df)
+    """print(df)"""
+    """print_players_by_modern_position(df)"""
+    # Load weekly_player_stats_defense.csv into defensive_df
+    defensive_df = pd.read_csv('weekly_player_stats_defense.csv')
+    print(defensive_df)
     # Example SQL queries
-    print("\nExample: First 5 players from the database:")
-    run_query("SELECT * FROM players LIMIT 5;")
-    print("\nExample: Distinct positions in the database:")
-    run_query("SELECT DISTINCT position FROM players;")
+    update_players(df)
+   
 
 if __name__ == "__main__":
     main()
