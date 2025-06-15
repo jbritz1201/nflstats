@@ -7,7 +7,8 @@ st.title("Quarterback Stats Lookup")
 qb_name = st.text_input("Enter QB Name (partial or full):")
 
 if qb_name:
-    url = f"http://127.0.0.1:8000/qb_stats/{qb_name}"
+    # Updated API URL to reflect new location under /api/
+    url = f"http://127.0.0.1:8000/api/qb_stats/{qb_name}"
     try:
         response = requests.get(url)
         response.raise_for_status()
