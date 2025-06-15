@@ -6,18 +6,17 @@ app = FastAPI()
 
 DB_PATH = "nfl.duckdb"
 
+def load_query(filename):
+    with open(filename, 'r') as f:
+        return f.read()
+
 @app.get("/qb_stats/{qb_name}")
 def get_qb_stats(qb_name: str):
     """
     API endpoint to get stats for a given quarterback name (case-insensitive, partial match).
     """
     con = duckdb.connect(DB_PATH, read_only=True)
-    query = """
-        SELECT *
-        FROM qb_stats
-        WHERE LOWER(passer_player_name) LIKE LOWER(?)
-        ORDER BY season
-    """
+    query = load_query('qbapi.sql')
     # Use wildcards for partial matching
     df = con.execute(query, [f"%{qb_name}%"]).fetchdf()
     con.close()
