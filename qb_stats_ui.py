@@ -15,6 +15,16 @@ if qb_name:
         if data:
             df = pd.DataFrame(data)
             st.dataframe(df)
+            # Plot touchdowns and interceptions by year if data is available
+            if 'season' in df.columns and 'touchdowns' in df.columns and 'interceptions' in df.columns:
+                df['season'] = df['season'].astype(str)  # Treat year as string
+                df_sorted = df.sort_values('season')
+                chart_data = df_sorted.set_index('season')[['touchdowns', 'interceptions']]
+                st.line_chart(
+                    data=chart_data,
+                    use_container_width=True
+                )
+                st.markdown("#### TD(s) to Int(s) Year by Year")
         else:
             st.info("No stats found for that quarterback.")
     except requests.exceptions.HTTPError as e:
