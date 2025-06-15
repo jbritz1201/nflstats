@@ -12,11 +12,13 @@ def main():
     # Load SQL query from external file
     query = load_query('qb_stats_query.sql')
 
-    qb_df = con.execute(query).fetchdf()
+    # Create qb_stats table from the query
+    con.execute("DROP TABLE IF EXISTS qb_stats")
+    con.execute(f"CREATE TABLE qb_stats AS {query}")
 
-    # Convert all NaN values to 0
+    # Optionally, load and print the table to verify
+    qb_df = con.execute("SELECT * FROM qb_stats").fetchdf()
     qb_df = qb_df.fillna(0)
-
     print(qb_df)
 
     con.close()
