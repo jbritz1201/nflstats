@@ -44,11 +44,11 @@ if qb_name:
             # Apply short names where appropriate
             df = df.rename(columns=col_rename)
             # Remove technical columns if present
-            drop_cols = [col for col in df.columns if col.lower() in ['row count', 'passer player id', 'passer player name']]
+            drop_cols = [col for col in df.columns if col.lower() in ['passer player id']]
             df = df.drop(columns=drop_cols, errors='ignore')
             # Sort by season and set season as string
             if 'Season' in df.columns:
-                df['Season'] = df['Season'].astype(str)
+                df['Season'] = df['Season'].astype(str) 
                 df = df.sort_values('Season')
             # Get the actual player name from the returned data if available
             actual_name = None
@@ -61,7 +61,7 @@ if qb_name:
                 st.markdown(
                     f"""
                     <div style="font-size:2.2em; font-weight:900; color:#0078FF; margin-bottom:0.2em; text-align:left; letter-spacing:0.5px;">
-                        🏆 QB Statistics by Season
+                        🏆 QB Statistics by Season - {actual_name if actual_name else qb_name.title()}   
                     </div>
                     """,
                     unsafe_allow_html=True

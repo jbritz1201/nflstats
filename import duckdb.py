@@ -14,6 +14,7 @@ for csv_file in csv_files[1:]:
     temp_df = pd.read_csv(csv_file, compression='gzip')
     df = pd.concat([df, temp_df], ignore_index=True)
 
+
 # Connect to a DuckDB database file
 con = duckdb.connect('nfl.duckdb')
 
