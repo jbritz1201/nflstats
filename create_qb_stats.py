@@ -1,22 +1,30 @@
 import duckdb
 import pandas as pd
+import os
 
 def load_query(filename):
     with open(filename, 'r') as f:
         return f.read()
 
 def main():
+    # Use absolute path for the SQL file in the sql directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    sql_path = os.path.join(base_dir, 'sql', 'qb_stats_query.sql')
+    db_path = os.path.join(base_dir, 'nfl.duckdb')
+
     # Connect to the DuckDB database
-    con = duckdb.connect('nfl.duckdb')
+    con = duckdb.connect(db_path)
 
     # Load SQL query from external file
-    query = load_query('qb_stats_query.sql')
+    query = load_query(sql_path)
 
-    qb_df = con.execute(query).fetchdf()
+    # Create qb_stats table from the query
+    con.execute("DROP TABLE IF EXISTS qb_stats")
+    con.execute(f"CREATE TABLE qb_stats AS {query}")
 
-    # Convert all NaN values to 0
+    # Optionally, load and print the table to verify
+    qb_df = con.execute("SELECT * FROM qb_stats").fetchdf()
     qb_df = qb_df.fillna(0)
-
     print(qb_df)
 
     con.close()
