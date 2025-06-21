@@ -3,7 +3,18 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="NFL Quarterback Stats Explorer", layout="wide")
+# Set Streamlit theme to dark
+st.set_page_config(page_title="NFL Quarterback Stats Explorer", layout="wide", initial_sidebar_state="auto")
+st.markdown(
+    """
+    <style>
+        body, .stApp { background-color: #18191A; color: #FFFFFF; }
+        .stDataFrame { background-color: #23272F; }
+        .css-1d391kg { background-color: #23272F; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Professional header
 st.markdown(
@@ -22,7 +33,7 @@ qb_name = st.text_input(
 )
 
 if qb_name:
-    url = f"http://127.0.0.1:8000/api/qb_stats/{qb_name}"
+    url = f"http://127.0.0.1:8000/api/qb/stats/{qb_name}"
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -55,12 +66,12 @@ if qb_name:
             if 'Passer Player Name' in pd.DataFrame(data).columns and not pd.DataFrame(data).empty:
                 actual_name = pd.DataFrame(data)['Passer Player Name'].iloc[0]
             # Layout: grid left, chart right
-            col1, col2 = st.columns([2, 3], gap="large")
+            col1, col2 = st.columns([4, 3], gap="large")
             with col1:
                 # Brighter, visually distinct grid title with trophy icon and player name
                 st.markdown(
                     f"""
-                    <div style="font-size:2.2em; font-weight:900; color:#0078FF; margin-bottom:0.2em; text-align:left; letter-spacing:0.5px;">
+                    <div style="font-size:2.2em; font-weight:900; color:#00BFFF; margin-bottom:0.2em; text-align:left; letter-spacing:0.5px;">
                         🏆 QB Statistics by Season - {actual_name if actual_name else qb_name.title()}   
                     </div>
                     """,
@@ -68,7 +79,7 @@ if qb_name:
                 )
                 # Hide the first column (column 0) in the grid by default
                 styled_df = (
-                    df.iloc[:, 0:]  # Exclude the first column
+                    df.iloc[:, 1:]  # Exclude the first column
                     .style.format(precision=0, thousands=",", na_rep="0")
                     .set_properties(**{'text-align': 'left'})
                 )
@@ -80,7 +91,7 @@ if qb_name:
             with col2:
                 st.markdown(
                     f"""
-                    <div style="font-size:2.2em; font-weight:900; color:#0078FF; margin-bottom:0.2em; text-align:left; letter-spacing:0.5px;">
+                    <div style="font-size:2.2em; font-weight:900; color:#00BFFF; margin-bottom:0.2em; text-align:left; letter-spacing:0.5px;">
                         📈 QB -  TDs vs. Ints
                     </div>
                     """,
@@ -88,28 +99,40 @@ if qb_name:
                 )
                 if {'Season', 'TDs', 'Ints'}.issubset(df.columns):
                     chart_data = df.set_index('Season')[['TDs', 'Ints']]
-                    # Try to get league averages for the same seasons
                     try:
-                        avg_url = f"http://127.0.0.1:8000/api/qb_stats/average_by_season"
+                        avg_url = f"http://127.0.0.1:8000/api/qb/stats/avg/all"
                         avg_response = requests.get(avg_url)
                         avg_data = avg_response.json() if avg_response.status_code == 200 else []
                         avg_df = pd.DataFrame(avg_data)
                         avg_df.columns = [col.replace('_', ' ').title() for col in avg_df.columns]
                         avg_df['Season'] = avg_df['Season'].astype(str)
                         avg_df = avg_df[avg_df['Season'].isin(df['Season'])]
-                        avg_df['Avg Touchdowns'] = pd.to_numeric(avg_df['Avg Touchdowns'], errors='coerce')
-                        avg_df['Avg Interceptions'] = pd.to_numeric(avg_df['Avg Interceptions'], errors='coerce')
-                        # Plot with matplotlib for custom styling
+
+                        # Use dark theme for matplotlib
+                        plt.style.use('dark_background')
                         fig, ax = plt.subplots(figsize=(7, 4))
-                        chart_data['TDs'].plot(ax=ax, marker='o', label='Player TDs', color='#2874A6')
-                        chart_data['Ints'].plot(ax=ax, marker='o', label='Player INTs', color='#CA6F1E')
-                        avg_df.set_index('Season')['Avg Touchdowns'].plot(ax=ax, color='red', linestyle='dotted', label='Avg TDs')
-                        avg_df.set_index('Season')['Avg Interceptions'].plot(ax=ax, color='orange', linestyle='dotted', label='Avg INTs')
-                        ax.set_title("TD(s) to Int(s) Year by Year", fontsize=14, color="#2E4053")
-                        ax.set_ylabel("Count")
-                        ax.set_xlabel("Season")
-                        ax.legend()
+                        y_min = min(
+                            chart_data.min().min(),
+                            avg_df['Avg Td'].min() if 'Avg Td' in avg_df.columns else float('inf'),
+                            avg_df['Avg Int'].min() if 'Avg Int' in avg_df.columns else float('inf')
+                        )
+                        y_max = max(
+                            chart_data.max().max(),
+                            avg_df['Avg Td'].max() if 'Avg Td' in avg_df.columns else float('-inf'),
+                            avg_df['Avg Int'].max() if 'Avg Int' in avg_df.columns else float('-inf')
+                        )
+                        chart_data['TDs'].plot(ax=ax, label='Player TDs', color='#2874A6')
+                        chart_data['Ints'].plot(ax=ax, label='Player INTs', color='#CA6F1E')
+                        if 'Avg Td' in avg_df.columns and 'Avg Int' in avg_df.columns:
+                            avg_df.set_index('Season')['Avg Td'].plot(ax=ax, color='red', linestyle='dotted', label='Avg TDs')
+                            avg_df.set_index('Season')['Avg Int'].plot(ax=ax, color='yellow', linestyle='dotted', label='Avg INTs')
+                        ax.set_title("TD(s) to Int(s) Year by Year", fontsize=14, color="#00BFFF")
+                        ax.set_ylabel("Count", color="#FFFFFF")
+                        ax.set_xlabel("Season", color="#FFFFFF")
+                        ax.set_ylim(y_min, y_max)
+                        ax.legend(fontsize=10)
                         ax.grid(alpha=0.3)
+                        ax.tick_params(colors='#FFFFFF')
                         st.pyplot(fig)
                     except Exception:
                         st.line_chart(
@@ -117,7 +140,6 @@ if qb_name:
                             use_container_width=True,
                             height=400
                         )
-            
         else:
             st.info("No stats found for that quarterback.")
     except requests.exceptions.HTTPError:
