@@ -26,10 +26,21 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-qb_name = st.text_input(
-    "Quarterback Name",
-    help="Type a quarterback's name (partial or full) to see their stats.",
-    placeholder="e.g. Tom Brady"
+# Get all distinct QB names from the API
+@st.cache_data(show_spinner=False)
+def get_all_qb_names():
+    url = "http://127.0.0.1:8000/api/qb/list/all"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return sorted(response.json())
+    return []
+
+qb_names_list = get_all_qb_names()
+
+qb_name = st.selectbox(
+    "Select Quarterback",
+    qb_names_list,
+    help="Choose a quarterback to see their stats."
 )
 
 if qb_name:
@@ -125,7 +136,7 @@ if qb_name:
                         chart_data['Ints'].plot(ax=ax, label='Player INTs', color='#CA6F1E')
                         if 'Avg Td' in avg_df.columns and 'Avg Int' in avg_df.columns:
                             avg_df.set_index('Season')['Avg Td'].plot(ax=ax, color='red', linestyle='dotted', label='Avg TDs')
-                            avg_df.set_index('Season')['Avg Int'].plot(ax=ax, color='yellow', linestyle='dotted', label='Avg INTs')
+                            avg_df.set_index('Season')['Avg Int'].plot(ax=ax, color='orange', linestyle='dotted', label='Avg INTs')
                         ax.set_title("TD(s) to Int(s) Year by Year", fontsize=14, color="#00BFFF")
                         ax.set_ylabel("Count", color="#FFFFFF")
                         ax.set_xlabel("Season", color="#FFFFFF")

@@ -90,7 +90,17 @@ def get_qb_season_avg_by_year(season: int):
         raise HTTPException(status_code=404, detail=f"No season averages found for {season}")
     return df_season.to_dict(orient="records")
 
-
-
-
+@app.get("/api/qb/list/all")
+def get_all_qb_names():
+    """
+    API endpoint to get a list of all distinct quarterback names.
+    """
+    qb_distinct_path = os.path.join(SQL_DIR, 'qb_distinct.sql')
+    query = load_query(qb_distinct_path)
+    con = duckdb.connect(DB_PATH, read_only=True)
+    df = con.execute(query).fetchdf()
+    con.close()
+    if df.empty:
+        raise HTTPException(status_code=404, detail="No quarterback names found")
+    return df["qb_name"].tolist()
 
