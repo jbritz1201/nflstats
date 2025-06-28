@@ -1,3 +1,5 @@
 nfl.duckdb
+nfl_stats.duckdb
 *.csv.gz
 *.csv
+*.tmp

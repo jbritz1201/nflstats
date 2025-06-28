@@ -1,6 +1,7 @@
 SELECT 
     season,
     passer_player_id,
+    passer_player_name,
     qb_name,
     attempts,
     completions,

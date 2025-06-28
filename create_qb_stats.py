@@ -19,11 +19,11 @@ def main():
     query = load_query(sql_path)
 
     # Create qb_stats table from the query
-    con.execute("DROP TABLE IF EXISTS qb_stats")
-    con.execute(f"CREATE TABLE qb_stats AS {query}")
+    con.execute("DROP TABLE IF EXISTS passer_stats")
+    con.execute(f"CREATE TABLE passer_stats AS {query}")
 
     # Optionally, load and print the table to verify
-    qb_df = con.execute("SELECT * FROM qb_stats").fetchdf()
+    qb_df = con.execute("SELECT * FROM passer_stats").fetchdf()
     qb_df = qb_df.fillna(0)
     print(qb_df)
 

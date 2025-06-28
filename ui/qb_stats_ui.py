@@ -88,9 +88,14 @@ if qb_name:
                     """,
                     unsafe_allow_html=True
                 )
-                # Hide the first column (column 0) in the grid by default
+                # Set the desired column order for the grid
+                desired_order = [
+                    'Season', 'Games', 'Att', 'Comp', 'TDs', 'Ints', 'Yds', 'Fum', 'Sacks', '1st Downs'
+                ]
+                # Only include columns that exist in the DataFrame
+                display_cols = [col for col in desired_order if col in df.columns]
                 styled_df = (
-                    df.iloc[:, 1:]  # Exclude the first column
+                    df[display_cols]
                     .style.format(precision=0, thousands=",", na_rep="0")
                     .set_properties(**{'text-align': 'left'})
                 )

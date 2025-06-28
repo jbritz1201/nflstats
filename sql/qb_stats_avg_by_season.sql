@@ -22,5 +22,5 @@ FROM
     HAVING SUM(pass_attempt) >= 244
     ORDER BY season, passer_player_name
 ) AS qualified_by_attempts
-WHERE season = ?
+--WHERE season = ?
 GROUP BY season
